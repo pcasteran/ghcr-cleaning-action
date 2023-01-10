@@ -25,9 +25,17 @@ func main() {
 	debug := flag.Bool("debug", false, "Enable the debug logs")
 	registry := github.String("ghcr.io")
 	user := github.String("pcasteran")
-	password := github.String("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")
+	//password := github.String("")
 	pkg := github.String("terraform-graph-beautifier")
 	flag.Parse()
+
+	// TODO: temp for test
+	b, err := os.ReadFile("pat.txt")
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	password := github.String(string(b))
 
 	// Configure logging.
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
