@@ -44,27 +44,19 @@ func main() {
 	client, err := NewGithubClient(context.Background(), *password)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to create the GitHub client")
-		return
 	}
 
 	// List all the versions of the package.
+	log.Debug().Str("user", *user).Str("package", *pkg).Msg("listing all package versions")
 	pkgVersions, err := client.GetAllContainerPackageVersions(*user, *pkg)
 	if err != nil {
-		log.Fatal().
-			Err(err).
-			Str("user", *user).
-			Str("package", *pkg).
-			Msg("unable to list the package versions")
-		return
+		log.Fatal().Err(err).Msg("unable to list the package versions")
 	}
-
-	// TODO: list PR tags
 
 	// Build the container registry client.
 	registryClient, err := NewContainerRegistryClient(*user, *password)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to create the container registry client")
-		return
 	}
 
 	// Get the registry object for each digest.
@@ -72,7 +64,7 @@ func main() {
 	repositoryEntriesByDigest := make(map[string]*GithubContainerRegistryRepositoryEntry)
 	for _, pkgVersion := range pkgVersions {
 		hash := *pkgVersion.Name
-		log.Debug().Str("hash", hash).Msg("fetching registry entry")
+		log.Debug().Str("hash", hash).Msg("fetching container registry entry")
 
 		// Get the container registry object.
 		object, err := registryClient.GetRegistryObjectFromHash(repository, hash)
