@@ -4,16 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-github/v49/github"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"
 )
-
-type GithubContainerRegistryRepositoryEntry struct {
-	pkgVersion     *github.PackageVersion
-	registryObject *ContainerRegistryObject
-}
 
 func main() {
 	// Parse the command line arguments.
@@ -53,6 +49,12 @@ func main() {
 		log.Fatal().Err(err).Msg("unable to list the package versions")
 	}
 
+	packageVersionByHash := make(map[string]*github.PackageVersion)
+	for _, pkgVersion := range pkgVersions {
+		hash := *pkgVersion.Name
+		packageVersionByHash[hash] = pkgVersion
+	}
+
 	// Build the container registry client.
 	registryClient, err := NewContainerRegistryClient(*user, *password)
 	if err != nil {
@@ -61,22 +63,24 @@ func main() {
 
 	// Get the registry object for each digest.
 	repository := fmt.Sprintf("%s/%s/%s", *registryUrl, *user, *pkg)
-	repositoryEntriesByDigest := make(map[string]*GithubContainerRegistryRepositoryEntry)
-	for _, pkgVersion := range pkgVersions {
-		hash := *pkgVersion.Name
+	imageByHash := make(map[string]v1.Image)
+	imageIndexByHash := make(map[string]v1.ImageIndex)
+	for hash := range packageVersionByHash {
 		log.Debug().Str("hash", hash).Msg("fetching container registry entry")
 
 		// Get the container registry object.
-		object, err := registryClient.GetRegistryObjectFromHash(repository, hash)
+		image, index, err := registryClient.GetRegistryObjectFromHash(repository, hash)
 		if err != nil {
 			log.Warn().Err(err).Msg("unable to retrieve container object")
 			continue
 		}
 
-		// Add the repository entry.
-		repositoryEntriesByDigest[hash] = &GithubContainerRegistryRepositoryEntry{
-			pkgVersion:     pkgVersion,
-			registryObject: object,
+		if image != nil {
+			imageByHash[hash] = image
+		}
+
+		if index != nil {
+			imageIndexByHash[hash] = index
 		}
 	}
 }
