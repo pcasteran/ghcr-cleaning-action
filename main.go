@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-	"github.com/google/go-github/v49/github"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"
@@ -14,20 +12,13 @@ import (
 func main() {
 	// Parse the command line arguments.
 	debug := flag.Bool("debug", false, "Enable the debug logs")
+	dryRun := flag.Bool("dry-run", false, "If true, compute everything but do no perform the deletion")
 	registry := flag.String("registry", "ghcr.io", "The URL of the container registry")
 	user := flag.String("user", "", "The container registry user")
 	password := flag.String("password", "", "The container registry user password or access token")
 	pkg := flag.String("package", "", "The name of the package to clean")
 	prTagRegexPattern := flag.String("pr-tag-regex", "pr-(\\d+).*", "The regex used to match the pull request tags")
 	flag.Parse()
-
-	// TODO: temp for test
-	b, err := os.ReadFile("pat.txt")
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-	password = github.String(string(b))
 
 	// Configure the logging.
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -50,7 +41,7 @@ func main() {
 
 	// Perform the registry cleaning.
 	prTagRegex := regexp.MustCompile(*prTagRegexPattern)
-	err = clean(ghClient, regClient, *user, *pkg, *registry, prTagRegex)
+	err = clean(ghClient, regClient, *user, *pkg, *registry, prTagRegex, *dryRun)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to perform the registry cleaning")
 	}

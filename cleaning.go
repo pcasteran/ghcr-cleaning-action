@@ -8,7 +8,7 @@ import (
 	"regexp"
 )
 
-func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg, registry string, prTagRegex *regexp.Regexp) error {
+func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg, registry string, prTagRegex *regexp.Regexp, dryRun bool) error {
 	// List all the versions of the package.
 	log.Debug().Str("user", user).Str("package", pkg).Msg("listing all the package versions")
 	pkgVersions, err := ghClient.GetAllContainerPackageVersions(user, pkg)
@@ -32,17 +32,29 @@ func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg
 		// Get the container registry object.
 		image, index, err := regClient.GetRegistryObjectFromHash(repository, hash)
 		if err != nil {
-			log.Warn().Err(err).Msg("unable to retrieve container object")
+			log.Warn().Err(err).Msg("unable to retrieve container registry object")
 			continue
 		}
 
 		if image != nil {
 			imageByHash[hash] = image
-		}
-
-		if index != nil {
+		} else if index != nil {
 			imageIndexByHash[hash] = index
+		} else {
+			// Something went wrong, we should never be here...
+			log.Warn().Err(err).Msg("invalid container registry object, that should not happen")
+			continue
 		}
+	}
+
+	// Determine the package versions to delete.
+
+	// Delete them.
+	if !dryRun {
+		// TODO
+	} else {
+		// Dry run mode, don't perform the deletion.
+		log.Info().Msg("Dry run mode is ON, no deletion has been performed.")
 	}
 
 	return nil
