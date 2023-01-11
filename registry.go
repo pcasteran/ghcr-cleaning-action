@@ -43,24 +43,24 @@ func (c *ContainerRegistryClient) GetRegistryObjectFromHash(repository, hash str
 
 	// Analyse the manifest.
 	switch descriptor.Descriptor.MediaType {
-	// Image manifest.
 	case types.DockerManifestSchema2:
+		// Image manifest.
 		image, err := descriptor.Image()
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to retrieve image from descriptor '%v': %w", descriptor, err)
 		}
 		return image, nil, nil
 
-	// Image index manifest.
 	case types.DockerManifestList:
+		// Image index manifest.
 		index, err := descriptor.ImageIndex()
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to retrieve image index from descriptor '%v': %w", descriptor, err)
 		}
 		return nil, index, nil
 
-	// Unmanaged manifest type.
 	default:
+		// Unmanaged manifest type.
 		return nil, nil, fmt.Errorf("unmanaged media type for descriptor '%v': %s", descriptor, descriptor.Descriptor.MediaType)
 	}
 }
