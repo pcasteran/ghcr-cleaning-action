@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"
+	"regexp"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 	user := flag.String("user", "", "The container registry user")
 	password := flag.String("password", "", "The container registry user password or access token")
 	pkg := flag.String("package", "", "The name of the package to clean")
-	prTagRegex := flag.String("pr-tag-regex", "pr-(\\d+).*", "The regex used to match the pull request tags")
+	prTagRegexPattern := flag.String("pr-tag-regex", "pr-(\\d+).*", "The regex used to match the pull request tags")
 	flag.Parse()
 
 	// TODO: temp for test
@@ -27,12 +28,11 @@ func main() {
 		return
 	}
 	password = github.String(string(b))
-	_ = prTagRegex
 
 	// Configure the logging.
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if *debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	}
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
@@ -49,7 +49,8 @@ func main() {
 	}
 
 	// Perform the registry cleaning.
-	err = clean(ghClient, regClient, *user, *pkg, *registry)
+	prTagRegex := regexp.MustCompile(*prTagRegexPattern)
+	err = clean(ghClient, regClient, *user, *pkg, *registry, prTagRegex)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to perform the registry cleaning")
 	}

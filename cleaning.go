@@ -5,11 +5,12 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-github/v49/github"
 	"github.com/rs/zerolog/log"
+	"regexp"
 )
 
-func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg, registry string) error {
+func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg, registry string, prTagRegex *regexp.Regexp) error {
 	// List all the versions of the package.
-	log.Debug().Str("user", user).Str("package", pkg).Msg("listing all package versions")
+	log.Debug().Str("user", user).Str("package", pkg).Msg("listing all the package versions")
 	pkgVersions, err := ghClient.GetAllContainerPackageVersions(user, pkg)
 	if err != nil {
 		return fmt.Errorf("unable to list the package versions: %w", err)
@@ -21,11 +22,12 @@ func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg
 	}
 
 	// Get the registry object (image or image index) for each hash.
+	log.Debug().Str("user", user).Str("package", pkg).Msg("fetching the container registry objects")
 	repository := fmt.Sprintf("%s/%s/%s", registry, user, pkg)
 	imageByHash := make(map[string]v1.Image)
 	imageIndexByHash := make(map[string]v1.ImageIndex)
 	for hash := range packageVersionByHash {
-		log.Debug().Str("hash", hash).Msg("fetching container registry entry")
+		log.Trace().Str("hash", hash).Msg("fetching container registry object")
 
 		// Get the container registry object.
 		image, index, err := regClient.GetRegistryObjectFromHash(repository, hash)
