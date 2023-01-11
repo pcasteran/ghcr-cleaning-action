@@ -9,10 +9,22 @@ import (
 	"strconv"
 )
 
-func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg, registry, ghRepository string, prTagRegex *regexp.Regexp, dryRun bool) error {
+type PullRequestFilterParams struct {
+	owner      string
+	repository string
+	tagRegex   *regexp.Regexp
+}
+
+type PackageRegistryParams struct {
+	registry string
+	user     string
+	pkg      string
+}
+
+func clean(ghClient *GithubClient, prFilterParams PullRequestFilterParams, regClient *ContainerRegistryClient, pkgRegistryParams PackageRegistryParams, dryRun bool) error {
 	// List all the versions of the package.
-	log.Debug().Str("user", user).Str("package", pkg).Msg("listing all the package versions")
-	pkgVersions, err := ghClient.GetAllContainerPackageVersions(user, pkg)
+	log.Debug().Str("user", pkgRegistryParams.user).Str("package", pkgRegistryParams.pkg).Msg("listing all the package versions")
+	pkgVersions, err := ghClient.GetAllContainerPackageVersions(pkgRegistryParams.user, pkgRegistryParams.pkg)
 	if err != nil {
 		return fmt.Errorf("unable to list the package versions: %w", err)
 	}
@@ -23,7 +35,7 @@ func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg
 	}
 
 	// Get the registry object (image or image index) for each hash.
-	repository := fmt.Sprintf("%s/%s/%s", registry, user, pkg)
+	repository := fmt.Sprintf("%s/%s/%s", pkgRegistryParams.registry, pkgRegistryParams.user, pkgRegistryParams.pkg)
 	log.Debug().Str("repository", repository).Msg("fetching the container registry objects")
 	imageByHash := make(map[string]v1.Image)
 	indexByHash := make(map[string]v1.ImageIndex)
@@ -49,7 +61,7 @@ func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg
 	}
 
 	// Determine the package versions to delete.
-	toDelete, err := computeHashesToDelete(ghClient, packageVersionByHash, imageByHash, indexByHash, user, ghRepository, prTagRegex)
+	toDelete, err := computeHashesToDelete(ghClient, prFilterParams, packageVersionByHash, imageByHash, indexByHash)
 	if err != nil {
 		return fmt.Errorf("unable to compute the hashes to delete: %w", err)
 	}
@@ -75,12 +87,10 @@ func clean(ghClient *GithubClient, regClient *ContainerRegistryClient, user, pkg
 
 func computeHashesToDelete(
 	ghClient *GithubClient,
+	prFilterParams PullRequestFilterParams,
 	packageVersionByHash map[string]*github.PackageVersion,
 	imageByHash map[string]v1.Image,
-	indexByHash map[string]v1.ImageIndex,
-	ghOwner string,
-	ghRepository string,
-	prTagRegex *regexp.Regexp) ([]string, error) {
+	indexByHash map[string]v1.ImageIndex) ([]string, error) {
 	// Create the sets containing the hashes to process and to delete.
 	toDelete := make(map[string]struct{})
 
@@ -103,7 +113,7 @@ func computeHashesToDelete(
 			deleteIndex = true
 		} else {
 			// There are tags, check if they are related to a closed pull request.
-			isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, ghOwner, ghRepository, prTagRegex, tags)
+			isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, prFilterParams, tags)
 			if err != nil {
 				log.Warn().Err(err).Msg("unable to check if image index is related to a closed PR")
 			} else if isRelatedToClosedPR {
@@ -157,7 +167,7 @@ func computeHashesToDelete(
 			deleteImage = true
 		} else {
 			// There are tags, check if they are related to a closed pull request.
-			isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, ghOwner, ghRepository, prTagRegex, tags)
+			isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, prFilterParams, tags)
 			if err != nil {
 				log.Warn().Err(err).Msg("unable to check if image is related to a closed PR")
 			} else if isRelatedToClosedPR {
@@ -201,10 +211,10 @@ func computeHashesToDelete(
 	return ret, nil
 }
 
-func checkTagsRelatedToClosedPullRequest(ghClient *GithubClient, ghOwner, ghRepository string, prTagRegex *regexp.Regexp, tags []string) (bool, error) {
+func checkTagsRelatedToClosedPullRequest(ghClient *GithubClient, prFilterParams PullRequestFilterParams, tags []string) (bool, error) {
 	// Check if at least one tag is related to a closed pull request.
 	for _, tag := range tags {
-		matches := prTagRegex.FindStringSubmatch(tag)
+		matches := prFilterParams.tagRegex.FindStringSubmatch(tag)
 		if matches != nil {
 			// Get the pull request id.
 			idStr := matches[1]
@@ -214,7 +224,7 @@ func checkTagsRelatedToClosedPullRequest(ghClient *GithubClient, ghOwner, ghRepo
 			}
 
 			// Get the pull request status.
-			status, err := ghClient.GetPullRequestState(ghOwner, ghRepository, id)
+			status, err := ghClient.GetPullRequestState(prFilterParams.owner, prFilterParams.repository, id)
 			if err != nil {
 				return false, fmt.Errorf("unable to retrieve pull request status: %w", err)
 			}

@@ -41,8 +41,17 @@ func main() {
 	}
 
 	// Perform the registry cleaning.
-	prTagRegex := regexp.MustCompile(*prTagRegexPattern)
-	err = clean(ghClient, regClient, *user, *pkg, *registry, *repository, prTagRegex, *dryRun)
+	pkgRegistryParams := PackageRegistryParams{
+		registry: *registry,
+		user:     *user,
+		pkg:      *pkg,
+	}
+	prFilterParams := PullRequestFilterParams{
+		owner:      *user,
+		repository: *repository,
+		tagRegex:   regexp.MustCompile(*prTagRegexPattern),
+	}
+	err = clean(ghClient, prFilterParams, regClient, pkgRegistryParams, *dryRun)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to perform the registry cleaning")
 	}
