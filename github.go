@@ -102,3 +102,13 @@ func (gh *GithubClient) GetAllContainerPackageVersions(user, packageName string)
 
 	return packageVersions, nil
 }
+
+func (gh *GithubClient) GetPullRequestState(owner, repository string, id int) (string, error) {
+	// Get the pull request.
+	pr, _, err := gh.client.PullRequests.Get(gh.ctx, owner, repository, id)
+	if err != nil {
+		return "", fmt.Errorf("unable to retrieve pull request for owner '%s', repository '%s', , id '%d': %w", owner, repository, id, err)
+	}
+
+	return *pr.State, nil
+}

@@ -17,6 +17,7 @@ func main() {
 	user := flag.String("user", "", "The container registry user")
 	password := flag.String("password", "", "The container registry user password or access token")
 	pkg := flag.String("package", "", "The name of the package to clean")
+	repository := flag.String("repository", "", "The GitHub repository in which to check the pull requests statuses")
 	prTagRegexPattern := flag.String("pr-tag-regex", "pr-(\\d+).*", "The regex used to match the pull request tags")
 	flag.Parse()
 
@@ -41,7 +42,7 @@ func main() {
 
 	// Perform the registry cleaning.
 	prTagRegex := regexp.MustCompile(*prTagRegexPattern)
-	err = clean(ghClient, regClient, *user, *pkg, *registry, prTagRegex, *dryRun)
+	err = clean(ghClient, regClient, *user, *pkg, *registry, *repository, prTagRegex, *dryRun)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to perform the registry cleaning")
 	}
