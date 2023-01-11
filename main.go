@@ -13,11 +13,11 @@ import (
 func main() {
 	// Parse the command line arguments.
 	debug := flag.Bool("debug", false, "Enable the debug logs")
-	registry := github.String("ghcr.io")
-	user := github.String("pcasteran")
-	//password := github.String("")
-	// TODO: PR tag regex
-	pkg := github.String("terraform-graph-beautifier")
+	registry := flag.String("registry", "ghcr.io", "The URL of the container registry")
+	user := flag.String("user", "", "The container registry user")
+	password := flag.String("password", "", "The container registry user password or access token")
+	pkg := flag.String("package", "", "The name of the package to clean")
+	prTagRegex := flag.String("pr-tag-regex", "pr-(\\d+).*", "The regex used to match the pull request tags")
 	flag.Parse()
 
 	// TODO: temp for test
@@ -26,7 +26,8 @@ func main() {
 		fmt.Print(err)
 		return
 	}
-	password := github.String(string(b))
+	password = github.String(string(b))
+	_ = prTagRegex
 
 	// Configure the logging.
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
