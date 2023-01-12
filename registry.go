@@ -9,25 +9,29 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
-type ContainerRegistryClient struct {
+type ContainerRegistryClient interface {
+	GetRegistryObjectFromHash(repository, hash string) (v1.Image, v1.ImageIndex, error)
+}
+
+type containerRegistryClientImpl struct {
 	auth authn.Authenticator
 }
 
 // NewContainerRegistryClient returns an initialized OCI container registry client
-func NewContainerRegistryClient(userName, password string) (*ContainerRegistryClient, error) {
+func NewContainerRegistryClient(userName, password string) (ContainerRegistryClient, error) {
 	// Build the Docker registry authentication data.
 	auth := &authn.Basic{
 		Username: userName,
 		Password: password,
 	}
 
-	return &ContainerRegistryClient{
+	return &containerRegistryClientImpl{
 		auth: auth,
 	}, nil
 }
 
 // GetRegistryObjectFromHash returns a repository object (image or image index) from its hash.
-func (c *ContainerRegistryClient) GetRegistryObjectFromHash(repository, hash string) (v1.Image, v1.ImageIndex, error) {
+func (c *containerRegistryClientImpl) GetRegistryObjectFromHash(repository, hash string) (v1.Image, v1.ImageIndex, error) {
 	// Build the digest from the repository and hash.
 	objectFullName := fmt.Sprintf("%s@%s", repository, hash)
 	digest, err := name.NewDigest(objectFullName, name.StrictValidation)

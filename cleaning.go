@@ -21,7 +21,7 @@ type PackageRegistryParams struct {
 	pkg      string
 }
 
-func clean(ghClient *GithubClient, prFilterParams PullRequestFilterParams, regClient *ContainerRegistryClient, pkgRegistryParams PackageRegistryParams, dryRun bool) error {
+func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regClient ContainerRegistryClient, pkgRegistryParams PackageRegistryParams, dryRun bool) error {
 	// List all the versions of the package.
 	log.Debug().Str("user", pkgRegistryParams.user).Str("package", pkgRegistryParams.pkg).Msg("listing all the package versions")
 	pkgVersions, err := ghClient.GetAllContainerPackageVersions(pkgRegistryParams.user, pkgRegistryParams.pkg)
@@ -86,7 +86,7 @@ func clean(ghClient *GithubClient, prFilterParams PullRequestFilterParams, regCl
 }
 
 func computeHashesToDelete(
-	ghClient *GithubClient,
+	ghClient GithubClient,
 	prFilterParams PullRequestFilterParams,
 	packageVersionByHash map[string]*github.PackageVersion,
 	imageByHash map[string]v1.Image,
@@ -211,8 +211,9 @@ func computeHashesToDelete(
 	return ret, nil
 }
 
-func checkTagsRelatedToClosedPullRequest(ghClient *GithubClient, prFilterParams PullRequestFilterParams, tags []string) (bool, error) {
-	// Check if at least one tag is related to a closed pull request.
+func checkTagsRelatedToClosedPullRequest(ghClient GithubClient, prFilterParams PullRequestFilterParams, tags []string) (bool, error) {
+	// Check if all tags are related to a closed pull request.
+	allTagsRelatedToClosedPR := true
 	for _, tag := range tags {
 		matches := prFilterParams.tagRegex.FindStringSubmatch(tag)
 		if matches != nil {
@@ -229,11 +230,15 @@ func checkTagsRelatedToClosedPullRequest(ghClient *GithubClient, prFilterParams 
 				return false, fmt.Errorf("unable to retrieve pull request status: %w", err)
 			}
 
-			if status == "closed" {
-				return true, nil
+			if status != "closed" {
+				allTagsRelatedToClosedPR = false
+				break
 			}
+		} else {
+			allTagsRelatedToClosedPR = false
+			break
 		}
 	}
 
-	return false, nil
+	return allTagsRelatedToClosedPR, nil
 }

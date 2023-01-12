@@ -7,13 +7,21 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type GithubClient struct {
+type GithubClient interface {
+	GetAllContainerPackages(user string) ([]*github.Package, error)
+
+	GetAllContainerPackageVersions(user, packageName string) ([]*github.PackageVersion, error)
+
+	GetPullRequestState(owner, repository string, id int) (string, error)
+}
+
+type githubClientImpl struct {
 	ctx    context.Context
 	client *github.Client
 }
 
 // NewGithubClient returns an initialized GitHub client
-func NewGithubClient(ctx context.Context, token string) (*GithubClient, error) {
+func NewGithubClient(ctx context.Context, token string) (GithubClient, error) {
 	// Create a new http.Client that will manage the authentication.
 	tokenSource := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -23,14 +31,14 @@ func NewGithubClient(ctx context.Context, token string) (*GithubClient, error) {
 	// Create the GitHub client.
 	githubClient := github.NewClient(httpClient)
 
-	return &GithubClient{
+	return &githubClientImpl{
 		ctx:    ctx,
 		client: githubClient,
 	}, nil
 }
 
 // GetAllContainerPackages returns all the active packages of type container
-func (gh *GithubClient) GetAllContainerPackages(user string) ([]*github.Package, error) {
+func (gh *githubClientImpl) GetAllContainerPackages(user string) ([]*github.Package, error) {
 	// Create an empty list of GitHub packages.
 	var packages []*github.Package
 
@@ -64,7 +72,7 @@ func (gh *GithubClient) GetAllContainerPackages(user string) ([]*github.Package,
 }
 
 // GetAllContainerPackageVersions returns all the versions of a package of type container
-func (gh *GithubClient) GetAllContainerPackageVersions(user, packageName string) ([]*github.PackageVersion, error) {
+func (gh *githubClientImpl) GetAllContainerPackageVersions(user, packageName string) ([]*github.PackageVersion, error) {
 	// Create an empty list of GitHub package versions.
 	var packageVersions []*github.PackageVersion
 
@@ -103,7 +111,7 @@ func (gh *GithubClient) GetAllContainerPackageVersions(user, packageName string)
 	return packageVersions, nil
 }
 
-func (gh *GithubClient) GetPullRequestState(owner, repository string, id int) (string, error) {
+func (gh *githubClientImpl) GetPullRequestState(owner, repository string, id int) (string, error) {
 	// Get the pull request.
 	pr, _, err := gh.client.PullRequests.Get(gh.ctx, owner, repository, id)
 	if err != nil {

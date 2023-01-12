@@ -9,6 +9,8 @@ import (
 	"regexp"
 )
 
+const defaultPrTagPattern = "^pr-(\\d+).*"
+
 func main() {
 	// Parse the command line arguments.
 	debug := flag.Bool("debug", false, "Enable the debug logs")
@@ -18,7 +20,7 @@ func main() {
 	password := flag.String("password", "", "The container registry user password or access token")
 	pkg := flag.String("package", "", "The name of the package to clean")
 	repository := flag.String("repository", "", "The GitHub repository in which to check the pull requests statuses")
-	prTagRegexPattern := flag.String("pr-tag-regex", "pr-(\\d+).*", "The regex used to match the pull request tags")
+	prTagPattern := flag.String("pr-tag-regex", defaultPrTagPattern, "The regex used to match the pull request tags")
 	flag.Parse()
 
 	// Configure the logging.
@@ -49,7 +51,7 @@ func main() {
 	prFilterParams := PullRequestFilterParams{
 		owner:      *user,
 		repository: *repository,
-		tagRegex:   regexp.MustCompile(*prTagRegexPattern),
+		tagRegex:   regexp.MustCompile(*prTagPattern),
 	}
 	err = clean(ghClient, prFilterParams, regClient, pkgRegistryParams, *dryRun)
 	if err != nil {
