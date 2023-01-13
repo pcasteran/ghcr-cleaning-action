@@ -5,6 +5,7 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-github/v49/github"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"regexp"
@@ -20,6 +21,8 @@ type CleaningTestSuite struct {
 }
 
 func TestCleaningTestSuite(t *testing.T) {
+	zerolog.SetGlobalLevel(zerolog.Disabled)
+
 	suite.Run(t, new(CleaningTestSuite))
 }
 

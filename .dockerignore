@@ -1,0 +1,7 @@
+# Ignore everything.
+**
+
+# Except the following.
+!go.mod
+!go.sum
+!*.go

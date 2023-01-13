@@ -4,3 +4,8 @@
 
 # GitHub personal access token
 pat.txt
+
+# Build directory
+dist/
+
+**/*.log

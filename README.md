@@ -19,5 +19,5 @@ the [documentation](https://docs.github.com/en/packages/working-with-a-github-pa
 the authentication to the GHCR registry must be done using a personal access token. Only class tokens can be used,
 fined-grained ones are currently (2023-01) not supported.
 
-The recommendation is to create a new PAT with only the `write:packages ` scope. To do so, you can
+The recommendation is to create a new PAT with only the `write:packages` scope. To do so, you can
 use [this](https://github.com/settings/tokens/new?scopes=write:packages) link.
