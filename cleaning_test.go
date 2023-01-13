@@ -314,7 +314,43 @@ func (s *CleaningTestSuite) TestIndexCascading3() {
 	// Check the result
 	r := s.Require()
 	r.NoError(err)
-	r.ElementsMatch(toDelete, []string{image1, index1}, index2)
+	r.ElementsMatch(toDelete, []string{image1, index1, index2})
+}
+
+func (s *CleaningTestSuite) TestIndexCascading4() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: []string{"pr-1234"}, references: []string{image1}},
+		index2: {tags: []string{"v1.2.3"}, references: []string{index1}},
+	})
+
+	ghClient := new(githubClientMock)
+	ghClient.
+		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		Return("closed", nil)
+
+	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.Empty(toDelete)
+}
+
+func (s *CleaningTestSuite) TestIndexMultipleReferences() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: nil, references: []string{image1, image1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.ElementsMatch(toDelete, []string{image1, index1})
 }
 
 //

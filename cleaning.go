@@ -91,113 +91,82 @@ func computeHashesToDelete(
 	packageVersionByHash map[string]*github.PackageVersion,
 	imageByHash map[string]v1.Image,
 	indexByHash map[string]v1.ImageIndex) ([]string, error) {
-	// Create the sets containing the hashes to process and to delete.
+	// Create a tree of the registry items.
+	type RegistryItem struct {
+		referencedCount int
+		references      []*RegistryItem
+		mustKeep        bool
+	}
+
+	items := make(map[string]*RegistryItem)
+
+	// Add the images.
+	for hash := range imageByHash {
+		items[hash] = &RegistryItem{
+			referencedCount: 0,
+			references:      nil,
+			mustKeep:        hasValidTags(ghClient, prFilterParams, packageVersionByHash[hash].Metadata.Container.Tags),
+		}
+	}
+
+	// Add the image indices.
+	for hash := range indexByHash {
+		items[hash] = &RegistryItem{
+			referencedCount: 0,
+			references:      nil,
+			mustKeep:        hasValidTags(ghClient, prFilterParams, packageVersionByHash[hash].Metadata.Container.Tags),
+		}
+	}
+
+	// Add the references.
+	for hash, index := range indexByHash {
+		indexManifest, err := index.IndexManifest()
+		if err != nil {
+			return nil, fmt.Errorf("unable to get the image index manifest: %w", err)
+		}
+
+		for _, manifest := range indexManifest.Manifests {
+			// Get the referenced item.
+			referencedHash := manifest.Digest.String()
+			referencedItem := items[referencedHash]
+
+			// Add it to the current item references.
+			items[hash].references = append(items[hash].references, referencedItem)
+
+			// Increment the references counter on the referenced item.
+			referencedItem.referencedCount++
+		}
+	}
+
+	// Identify the items to be deleted.
 	toDelete := make(map[string]struct{})
 
-	toProcess := make(map[string]struct{})
-	for hash := range packageVersionByHash {
-		toProcess[hash] = struct{}{}
-	}
+	nPass := 0
+	for {
+		nPass++
+		nMarkedToDelete := 0
 
-	// First, analyse the image indices.
-	nbUntaggedIndices := 0
-	nbRelatedToClosedPRIndices := 0
-	for hash, index := range indexByHash {
-		tags := packageVersionByHash[hash].Metadata.Container.Tags
-		deleteIndex := false
+		for hash, item := range items {
+			if item.referencedCount == 0 && !item.mustKeep {
+				// The current item can be deleted.
+				delete(items, hash)
+				toDelete[hash] = struct{}{}
+				nMarkedToDelete++
 
-		// First, check if the image index is untagged.
-		if len(tags) == 0 {
-			nbUntaggedIndices++
-			deleteIndex = true
-		} else {
-			// There are tags, check if they are related to a closed pull request.
-			isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, prFilterParams, tags)
-			if err != nil {
-				log.Warn().Err(err).Msg("unable to check if image index is related to a closed PR")
-			} else if isRelatedToClosedPR {
-				nbRelatedToClosedPRIndices++
-				deleteIndex = true
+				// Decrement the referenced count in all the referenced items.
+				for _, ref := range item.references {
+					ref.referencedCount--
+				}
 			}
 		}
 
-		// If the index MUST NOT be deleted then the referenced images must also be kept.
-		// So we remove them from the set of images to be processed as we don't want to delete them later.
-		//
-		// Otherwise, if the index MUST be deleted, we can't be sure that the referenced images
-		// must also be deleted: they can be tagged, so we would want to keep them.
-		// In that case, we keep them in the set of images to be processed.
-		if !deleteIndex {
-			indexManifest, err := index.IndexManifest()
-			if err != nil {
-				log.Warn().Err(err).Msg("unable to get the image index manifest")
-				continue
-			}
+		log.Debug().Int("pass", nPass).Int("nb-marked-to-delete", nMarkedToDelete).Send()
 
-			for _, manifest := range indexManifest.Manifests {
-				// Mark the referenced image hash as processed.
-				referencedHash := manifest.Digest.String()
-				delete(toProcess, referencedHash)
-			}
-		}
-
-		// Mark the image index hash as processed.
-		delete(toProcess, hash)
-
-		// Mark the image index hash to be deleted.
-		if deleteIndex {
-			toDelete[hash] = struct{}{}
+		if nMarkedToDelete == 0 {
+			// Done, there is no more items to mark for deletion.
+			break
 		}
 	}
-
-	// Then, analyse the remaining images.
-	nbUntaggedImages := 0
-	nbRelatedToClosedPRImages := 0
-	for hash := range toProcess {
-		tags := packageVersionByHash[hash].Metadata.Container.Tags
-		deleteImage := false
-
-		// First, check if the image is untagged.
-		if len(tags) == 0 {
-			nbUntaggedImages++
-			deleteImage = true
-		} else {
-			// There are tags, check if they are related to a closed pull request.
-			isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, prFilterParams, tags)
-			if err != nil {
-				log.Warn().Err(err).Msg("unable to check if image is related to a closed PR")
-			} else if isRelatedToClosedPR {
-				nbRelatedToClosedPRImages++
-				deleteImage = true
-			}
-		}
-
-		// Mark the image hash as processed.
-		delete(toProcess, hash)
-
-		// Mark the image hash to be deleted.
-		if deleteImage {
-			toDelete[hash] = struct{}{}
-		}
-	}
-
-	// Check that the set of hashes to process is empty.
-	if len(toProcess) > 0 {
-		var remaining []string
-		for hash := range toProcess {
-			remaining = append(remaining, hash)
-		}
-		return nil, fmt.Errorf("some hashes were not processed, that should not happen : %v", remaining)
-	}
-
-	// Log the summary.
-	log.Debug().
-		Int("nb-indices-untagged", nbUntaggedIndices).
-		Int("nb-indices-related-to-closed-pr", nbRelatedToClosedPRIndices).
-		Int("nb-images-referenced-by-indices", nbReferencedImages).
-		Int("nb-images-untagged", nbUntaggedImages).
-		Int("nb-images-related-to-closed-pr", nbRelatedToClosedPRImages).
-		Msg("hashes to be deleted computed")
 
 	// Return a slice of the hashes to delete.
 	var ret []string
@@ -205,6 +174,26 @@ func computeHashesToDelete(
 		ret = append(ret, hash)
 	}
 	return ret, nil
+}
+
+func hasValidTags(ghClient GithubClient, prFilterParams PullRequestFilterParams, tags []string) bool {
+	hasValidTags := true
+
+	if len(tags) == 0 {
+		hasValidTags = false
+	} else {
+		// There are tags, check if they are related to a closed pull request.
+		isRelatedToClosedPR, err := checkTagsRelatedToClosedPullRequest(ghClient, prFilterParams, tags)
+		if err != nil {
+			// Error occurred, don't change the returned value as we don't want to delete this object.
+			log.Warn().Err(err).Msg("unable to check if a tag is related to a closed PR")
+		} else if isRelatedToClosedPR {
+			// All the tags are related to a closed pull request.
+			hasValidTags = false
+		}
+	}
+
+	return hasValidTags
 }
 
 func checkTagsRelatedToClosedPullRequest(ghClient GithubClient, prFilterParams PullRequestFilterParams, tags []string) (bool, error) {
