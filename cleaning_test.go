@@ -208,7 +208,114 @@ func (s *CleaningTestSuite) TestImageMixedValidTagAndClosedPullRequestsTag() {
 	r.Empty(toDelete)
 }
 
-// index (tag) => index (no tag) => images
+func (s *CleaningTestSuite) TestIndexNoTag() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: nil, references: []string{image1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, PullRequestFilterParams{}, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.ElementsMatch(toDelete, []string{image1, index1})
+}
+
+func (s *CleaningTestSuite) TestIndexNoTag2() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: []string{"v1.2.3"}, references: nil},
+		index1: {tags: nil, references: []string{image1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.ElementsMatch(toDelete, []string{index1})
+}
+
+func (s *CleaningTestSuite) TestIndexValidTag() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: []string{"v1.2.3"}, references: []string{image1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.Empty(toDelete)
+}
+
+func (s *CleaningTestSuite) TestIndexMultipleRefToImage() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: nil, references: []string{image1}},
+		index2: {tags: []string{"v1.2.3"}, references: []string{image1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.ElementsMatch(toDelete, []string{index1})
+}
+
+func (s *CleaningTestSuite) TestIndexCascading() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: nil, references: []string{image1}},
+		index2: {tags: []string{"v1.2.3"}, references: []string{index1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.Empty(toDelete)
+}
+
+func (s *CleaningTestSuite) TestIndexCascading2() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: nil, references: []string{image1, index2}},
+		index2: {tags: []string{"v1.2.3"}, references: []string{image1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.ElementsMatch(toDelete, []string{index1})
+}
+
+func (s *CleaningTestSuite) TestIndexCascading3() {
+	// Compute the hashes to delete.
+	versions, images, indices := s.buildTestData(map[string]TestDataItem{
+		image1: {tags: nil, references: nil},
+		index1: {tags: nil, references: []string{image1}},
+		index2: {tags: nil, references: []string{index1}},
+	})
+
+	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
+
+	// Check the result
+	r := s.Require()
+	r.NoError(err)
+	r.ElementsMatch(toDelete, []string{image1, index1}, index2)
+}
 
 //
 // Test data generation.

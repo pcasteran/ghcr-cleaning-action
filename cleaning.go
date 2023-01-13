@@ -102,7 +102,6 @@ func computeHashesToDelete(
 	// First, analyse the image indices.
 	nbUntaggedIndices := 0
 	nbRelatedToClosedPRIndices := 0
-	nbReferencedImages := 0
 	for hash, index := range indexByHash {
 		tags := packageVersionByHash[hash].Metadata.Container.Tags
 		deleteIndex := false
@@ -122,26 +121,23 @@ func computeHashesToDelete(
 			}
 		}
 
-		// The index can reference other indices and images:
-		//   - the referenced images will also be marked as processed
-		//   - the references indices are ignored as they will be processed by the main loop
-		indexManifest, err := index.IndexManifest()
-		if err != nil {
-			log.Warn().Err(err).Msg("unable to get the image index manifest")
-			continue
-		}
+		// If the index MUST NOT be deleted then the referenced images must also be kept.
+		// So we remove them from the set of images to be processed as we don't want to delete them later.
+		//
+		// Otherwise, if the index MUST be deleted, we can't be sure that the referenced images
+		// must also be deleted: they can be tagged, so we would want to keep them.
+		// In that case, we keep them in the set of images to be processed.
+		if !deleteIndex {
+			indexManifest, err := index.IndexManifest()
+			if err != nil {
+				log.Warn().Err(err).Msg("unable to get the image index manifest")
+				continue
+			}
 
-		for _, manifest := range indexManifest.Manifests {
-			referencedHash := manifest.Digest.String()
-			if _, ok := imageByHash[referencedHash]; ok {
+			for _, manifest := range indexManifest.Manifests {
 				// Mark the referenced image hash as processed.
+				referencedHash := manifest.Digest.String()
 				delete(toProcess, referencedHash)
-
-				// Mark the referenced image hash to be deleted.
-				if deleteIndex {
-					nbReferencedImages++
-					toDelete[referencedHash] = struct{}{}
-				}
 			}
 		}
 
