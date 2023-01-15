@@ -64,6 +64,13 @@ func (m *githubClientMock) GetAllContainerPackageVersions(user, packageName stri
 	return nil, nil
 }
 
+func (m *githubClientMock) DeleteContainerPackageVersion(user, packageName string, id int64) error {
+	_ = user
+	_ = packageName
+	_ = id
+	return nil
+}
+
 func (m *githubClientMock) GetPullRequestState(owner, repository string, id int) (string, error) {
 	// Records that the method was called with its parameters.
 	args := m.Called(owner, repository, id)

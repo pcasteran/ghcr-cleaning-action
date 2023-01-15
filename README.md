@@ -16,8 +16,9 @@ the [unit tests](cleaning_test.go).
 
 As per
 the [documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic),
-the authentication to the GHCR registry must be done using a personal access token. Only class tokens can be used,
+the authentication to the GHCR registry must be done using a personal access token. Only classic tokens can be used,
 fined-grained ones are currently (2023-01) not supported.
 
-The recommendation is to create a new PAT with only the `write:packages` scope. To do so, you can
-use [this](https://github.com/settings/tokens/new?scopes=write:packages) link.
+The [recommendation](https://docs.github.com/en/rest/packages?apiVersion=2022-11-28#delete-package-version-for-a-user)
+is to create a new PAT with only the `read:packages` and `delete:packages` scopes. To do so, you can
+use [this](https://github.com/settings/tokens/new?scopes=read:packages,delete:packages) link.

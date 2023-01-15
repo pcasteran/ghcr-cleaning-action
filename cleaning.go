@@ -73,7 +73,12 @@ func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regCli
 		for _, hash := range toDelete {
 			version := packageVersionByHash[hash]
 			log.Trace().Str("hash", hash).Int64("version-id", *version.ID).Msg("deleting package version")
-			nbDeleted++ // TODO: increment if no error during deletion
+			err := ghClient.DeleteContainerPackageVersion(pkgRegistryParams.user, pkgRegistryParams.pkg, *version.ID)
+			if err != nil {
+				log.Warn().Err(err).Msg("unable to delete package version")
+				continue
+			}
+			nbDeleted++
 		}
 
 		log.Info().Int("nb-deleted", nbDeleted).Msg("registry cleaning done")

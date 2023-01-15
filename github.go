@@ -12,6 +12,8 @@ type GithubClient interface {
 
 	GetAllContainerPackageVersions(user, packageName string) ([]*github.PackageVersion, error)
 
+	DeleteContainerPackageVersion(user, packageName string, id int64) error
+
 	GetPullRequestState(owner, repository string, id int) (string, error)
 }
 
@@ -109,6 +111,16 @@ func (gh *githubClientImpl) GetAllContainerPackageVersions(user, packageName str
 	}
 
 	return packageVersions, nil
+}
+
+func (gh *githubClientImpl) DeleteContainerPackageVersion(user, packageName string, id int64) error {
+	// Delete the package version
+	_, err := gh.client.Users.PackageDeleteVersion(gh.ctx, user, "container", packageName, id)
+	if err != nil {
+		return fmt.Errorf("unable to delete container package version '%d' for user '%s' and package '%s': %w", id, user, packageName, err)
+	}
+
+	return nil
 }
 
 func (gh *githubClientImpl) GetPullRequestState(owner, repository string, id int) (string, error) {
