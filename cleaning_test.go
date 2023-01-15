@@ -91,7 +91,7 @@ func (s *CleaningTestSuite) TestImageNoTag() {
 
 	toDelete, err := computeHashesToDelete(nil, PullRequestFilterParams{}, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{image1})
@@ -105,7 +105,7 @@ func (s *CleaningTestSuite) TestImageValidTag() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.Empty(toDelete)
@@ -124,7 +124,7 @@ func (s *CleaningTestSuite) TestImageActivePullRequestTag() {
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	ghClient.AssertExpectations(s.T())
 
 	r := s.Require()
@@ -145,7 +145,7 @@ func (s *CleaningTestSuite) TestImageClosedPullRequestTag() {
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	ghClient.AssertExpectations(s.T())
 
 	r := s.Require()
@@ -166,7 +166,7 @@ func (s *CleaningTestSuite) TestImageUnknownPullRequestTag() {
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	ghClient.AssertExpectations(s.T())
 
 	r := s.Require()
@@ -189,7 +189,7 @@ func (s *CleaningTestSuite) TestImageMixedActiveAndClosedPullRequestsTag() {
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	ghClient.AssertExpectations(s.T())
 
 	r := s.Require()
@@ -210,7 +210,7 @@ func (s *CleaningTestSuite) TestImageMixedValidTagAndClosedPullRequestsTag() {
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	ghClient.AssertExpectations(s.T())
 
 	r := s.Require()
@@ -227,7 +227,7 @@ func (s *CleaningTestSuite) TestIndexNoTag() {
 
 	toDelete, err := computeHashesToDelete(nil, PullRequestFilterParams{}, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{image1, index1})
@@ -242,7 +242,7 @@ func (s *CleaningTestSuite) TestIndexNoTag2() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{index1})
@@ -257,7 +257,7 @@ func (s *CleaningTestSuite) TestIndexValidTag() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.Empty(toDelete)
@@ -273,7 +273,7 @@ func (s *CleaningTestSuite) TestIndexMultipleRefToImage() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{index1})
@@ -289,7 +289,7 @@ func (s *CleaningTestSuite) TestIndexCascading() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.Empty(toDelete)
@@ -305,7 +305,7 @@ func (s *CleaningTestSuite) TestIndexCascading2() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{index1})
@@ -321,7 +321,7 @@ func (s *CleaningTestSuite) TestIndexCascading3() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{image1, index1, index2})
@@ -342,7 +342,7 @@ func (s *CleaningTestSuite) TestIndexCascading4() {
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.Empty(toDelete)
@@ -357,7 +357,7 @@ func (s *CleaningTestSuite) TestIndexMultipleReferences() {
 
 	toDelete, err := computeHashesToDelete(nil, defaultPrFilterParams, versions, images, indices)
 
-	// Check the result
+	// Check the result.
 	r := s.Require()
 	r.NoError(err)
 	r.ElementsMatch(toDelete, []string{image1, index1})

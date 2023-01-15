@@ -1,8 +1,7 @@
 # GitHub Container registry cleaning action
 
-GitHub action allowing to clean a GitHub Container registry by deleting the unnecessary images and image
-indices (see [this](https://docs.docker.com/registry/spec/manifest-v2-2/)).
-Unnecessary can mean:
+GitHub action allowing to clean a GitHub Container registry by deleting the unnecessary images and
+image [indices](https://docs.docker.com/registry/spec/manifest-v2-2/)). Unnecessary can mean:
 
 - untagged images not referenced by any image index
 - untagged image indices and their referenced images
