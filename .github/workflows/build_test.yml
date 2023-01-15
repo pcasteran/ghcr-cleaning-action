@@ -5,13 +5,13 @@ on:
     branches:
       - "main"
     paths-ignore:
-      - '**/*.md'
       - '.gitignore'
       - '.hadolint.yaml'
       - '.pre-commit-config.yaml'
       - '.yamllint.yaml'
       - 'LICENSE'
       - 'Makefile'
+      - 'README.md'
 
 jobs:
 
