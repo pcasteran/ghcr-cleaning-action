@@ -1,6 +1,9 @@
 name: Test action
 
-on: workflow_dispatch
+on:
+  pull_request:
+    branches:
+      - "test_action"
 
 jobs:
 
