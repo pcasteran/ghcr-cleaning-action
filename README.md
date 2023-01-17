@@ -24,7 +24,7 @@ with:
 ```
 
 **The input `dry-run` is set to `true` in the sample above to let you test the behavior of the action and configure it
-to your needs with no risk of deleting unwanted objects.**
+to your needs without actually deleting objects from your registry.**
 
 ## Inputs
 
