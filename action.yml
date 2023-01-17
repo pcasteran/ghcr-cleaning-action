@@ -1,5 +1,9 @@
-name: GitHub Container registry cleaning
+name: GitHub container registry cleaning
 description: Clean a GitHub Container registry by removing all unnecessary objects
+branding:
+  icon: 'trash-2'
+  color: 'green'
+
 inputs:
   # Container registry inputs.
   registry:
