@@ -21,7 +21,7 @@ func main() {
 	password := flag.String("password", "", "The container registry user password or access token")
 	pkg := flag.String("package", "", "The name of the package to clean")
 	repository := flag.String("repository", "", "The GitHub repository (format owner/repository) in which to check the pull requests statuses")
-	prTagPattern := flag.String("pr-tag-regex", defaultPrTagPattern, "The regex used to match the pull request tags")
+	prTagPattern := flag.String("pr-tag-regex", defaultPrTagPattern, "The regular expression used to match the pull request tags, must include one capture group for the PR id")
 	flag.Parse()
 
 	// Configure the logging.

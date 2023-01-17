@@ -16,8 +16,10 @@ jobs:
       - name: Test the action
         uses: ./ # Uses an action in the root directory
         with:
+          user: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
           package: terraform-graph-beautifier
           repository: pcasteran/terraform-graph-beautifier
+          pr-tag-regex: "^invalid-(\\d+).*"
           dry-run: true
           debug: true

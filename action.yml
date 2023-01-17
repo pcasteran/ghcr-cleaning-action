@@ -19,11 +19,11 @@ inputs:
 
   # Repository inputs.
   repository:
-    description: Repository name with owner, for example, `pcasteran/ghcr-cleaning-action`
+    description: The GitHub repository (format owner/repository) in which to check the pull requests statuses
     default: ${{ github.repository }}
     required: false
   pr-tag-regex:
-    description: The regular expression used to match the pull request tags
+    description: The regular expression used to match the pull request tags, must include one capture group for the PR id
     default: "^pr-(\\d+).*"
     required: false
 
