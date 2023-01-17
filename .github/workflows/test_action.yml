@@ -17,9 +17,7 @@ jobs:
         uses: ./ # Uses an action in the root directory
         with:
           user: ${{ github.repository_owner }}
-          # TODO: temp for test
-#          password: ${{ secrets.SECRET_PAT }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.SECRET_PAT }}
           package: cdktf-bundle
           repository: pcasteran/terraform-cdk-bundle
           debug: true
