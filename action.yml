@@ -30,11 +30,11 @@ inputs:
   # Misc inputs.
   dry-run:
     description: If true, compute everything but do no perform the deletion
-    default: false
+    default: "false"
     required: false
   debug:
     description: Enable the debug logs
-    default: false
+    default: "false"
     required: false
 
 runs:
@@ -56,5 +56,5 @@ runs:
     - -pr-tag-regex
     - ${{ inputs.pr-tag-regex }}
     # Misc inputs.
-    - ${{ inputs.dry-run && '-dry-run' }}
-    - ${{ inputs.debug && '-debug' }}
+    - ${{ inputs.dry-run == 'true' && '-dry-run' }}
+    - ${{ inputs.debug == 'true' && '-debug' }}
