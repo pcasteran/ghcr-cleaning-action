@@ -60,7 +60,7 @@ func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regCli
 		}
 	}
 
-	// Determine the package versions to delete.
+	// Determine the hashes to delete.
 	toDelete, err := computeHashesToDelete(ghClient, prFilterParams, packageVersionByHash, imageByHash, indexByHash)
 	if err != nil {
 		return fmt.Errorf("unable to compute the hashes to delete: %w", err)

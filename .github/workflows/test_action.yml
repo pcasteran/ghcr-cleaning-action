@@ -9,8 +9,6 @@ jobs:
 
   test_action:
     name: Test the action
-    permissions:
-      packages: delete
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
