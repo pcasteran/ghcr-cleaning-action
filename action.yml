@@ -23,7 +23,8 @@ inputs:
     default: ${{ github.repository }}
     required: false
   pr-tag-regex:
-    description: The regular expression used to match the pull request tags, must include one capture group for the PR id
+    description: |
+      The regular expression used to match the pull request tags, must include one capture group for the PR id
     default: "^pr-(\\d+).*"
     required: false
 
