@@ -15,5 +15,9 @@ jobs:
 
       - name: Test the action
         uses: ./ # Uses an action in the root directory
-#        with:
-#          toto: "Mona the Octocat"
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          package: terraform-graph-beautifier
+          repository: pcasteran/terraform-graph-beautifier
+          dry-run: true
+          debug: true

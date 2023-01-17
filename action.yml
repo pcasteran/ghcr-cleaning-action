@@ -5,30 +5,37 @@ inputs:
   registry:
     description: The URL of the container registry
     default: ghcr.io
+    required: false
   user:
     description: The container registry user
     default: ${{ github.repository_owner }}
+    required: false
   password:
     description: The container registry user password or access token
+    required: true
   package:
     description: The name of the package to clean
-    default: ${{ github.repository }}
+    required: true
 
   # Repository inputs.
   repository:
     description: Repository name with owner, for example, `pcasteran/ghcr-cleaning-action`
     default: ${{ github.repository }}
+    required: false
   pr-tag-regex:
     description: The regular expression used to match the pull request tags
     default: "^pr-(\\d+).*"
+    required: false
 
   # Misc inputs.
   dry-run:
     description: If true, compute everything but do no perform the deletion
     default: false
+    required: false
   debug:
     description: Enable the debug logs
     default: false
+    required: false
 
 runs:
   using: docker
