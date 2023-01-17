@@ -41,6 +41,7 @@ runs:
   using: docker
   image: Dockerfile
   args:
+    # Container registry inputs.
     - -registry
     - ${{ inputs.registry }}
     - -user
@@ -49,11 +50,11 @@ runs:
     - ${{ inputs.password }}
     - -package
     - ${{ inputs.package }}
+    # Repository inputs.
     - -repository
     - ${{ inputs.repository }}
     - -pr-tag-regex
     - ${{ inputs.pr-tag-regex }}
-    - -dry-run
-    - ${{ inputs.dry-run }}
-    - -debug
-    - ${{ inputs.debug }}
+    # Misc inputs.
+    - ${{ inputs.dry-run && '-dry-run' }}
+    - ${{ inputs.debug && '-debug' }}
