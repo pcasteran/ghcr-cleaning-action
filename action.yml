@@ -56,5 +56,5 @@ runs:
     - -pr-tag-regex
     - ${{ inputs.pr-tag-regex }}
     # Misc inputs.
-    - ${{ inputs.dry-run == 'true' && '-dry-run' || '' }}
     - ${{ inputs.debug == 'true' && '-debug' || '' }}
+    - ${{ inputs.dry-run == 'true' && '-dry-run' || '' }}
