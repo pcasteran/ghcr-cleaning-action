@@ -21,3 +21,4 @@ jobs:
           package: cdktf-bundle
           repository: pcasteran/terraform-cdk-bundle
           debug: true
+          dry-run: true

@@ -11,6 +11,38 @@ image [indices](https://docs.docker.com/registry/spec/manifest-v2-2/). Unnecessa
 There are actually many possible combinations, for a list of all the managed cases see
 the [unit tests](cleaning_test.go).
 
+## Basic usage
+
+```yaml
+uses: actions/ghcr-cleaning-action@v1
+with:
+  user: ${{ github.repository_owner }}
+  password: ${{ secrets.YOUR_SECRET_PAT }}
+  package: terraform-graph-beautifier
+  repository: pcasteran/terraform-graph-beautifier
+  dry-run: true
+```
+
+**The input `dry-run` is set to `true` in the sample above to let you test the behavior of the action and configure it
+to your needs with no risk of deleting unwanted objects.**
+
+## Inputs
+
+| Name           | Type   | Required | Description                                                                                                                           |
+|----------------|--------|----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `registry`     | String | No       | The URL of the container registry. Defaults to `ghcr.io`.                                                                             |
+| `user`         | String | No       | The container registry user. Defaults to `${{ github.repository_owner }}`.                                                            |
+| `password`     | String | Yes      | The container registry user password or access token. See the [authentication](#authentication) section                               |
+| `package`      | String | Yes      | The name of the package to clean.                                                                                                     |
+| `repository`   | String | No       | The GitHub repository (format owner/repository) in which to check the pull requests statuses. Defaults to `${{ github.repository }}`. |
+| `pr-tag-regex` | String | No       | The regular expression used to match the pull request tags, must include one capture group for the PR id. Defaults to `^pr-(\\d+).*`. |
+| `dry-run`      | Bool   | No       | If true, compute everything but do no perform the deletion. Defaults to `false`.                                                      |
+| `debug`        | Bool   | No       | Enable the debug logs. Defaults to `false`.                                                                                           |
+
+## Outputs
+
+This action does not output any value.
+
 ## Authentication
 
 As per
