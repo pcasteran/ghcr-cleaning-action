@@ -20,6 +20,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           package: terraform-graph-beautifier
           repository: pcasteran/terraform-graph-beautifier
-          pr-tag-regex: "^invalid-(\\d+).*"
           dry-run: true
           debug: true
