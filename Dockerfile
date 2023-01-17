@@ -3,10 +3,7 @@ ARG GO_VERSION="1.19-alpine3.17"
 
 ##
 
-FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS binary_builder
-
-ARG TARGETOS
-ARG TARGETARCH
+FROM golang:${GO_VERSION} AS binary_builder
 
 # Install the system dependencies.
 RUN apk add --no-cache upx
@@ -18,7 +15,7 @@ RUN go mod download
 
 # Build and compress the binary for the target architecture and operating system.
 COPY . .
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -v -ldflags="-w -s" -o dist/ . && \
+RUN CGO_ENABLED=0 go build -v -ldflags="-w -s" -o dist/ . && \
     upx --best --lzma dist/ghcr-cleaning-action
 
 ##

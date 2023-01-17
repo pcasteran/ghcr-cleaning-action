@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"os"
 	"regexp"
+	"strings"
 )
 
 const defaultPrTagPattern = "^pr-(\\d+).*"
@@ -19,8 +20,8 @@ func main() {
 	user := flag.String("user", "", "The container registry user")
 	password := flag.String("password", "", "The container registry user password or access token")
 	pkg := flag.String("package", "", "The name of the package to clean")
-	repository := flag.String("repository", "", "The GitHub repository in which to check the pull requests statuses")
-	prTagPattern := flag.String("pr-tag-regex", defaultPrTagPattern, "The regex used to match the pull request tags")
+	repository := flag.String("repository", "", "The GitHub repository (format owner/repository) in which to check the pull requests statuses")
+	prTagPattern := flag.String("pr-tag-regex", defaultPrTagPattern, "The regular expression used to match the pull request tags, must include one capture group for the PR id")
 	flag.Parse()
 
 	// Configure the logging.
@@ -43,14 +44,15 @@ func main() {
 	}
 
 	// Perform the registry cleaning.
+	ownerAndRepo := strings.Split(*repository, "/")
 	pkgRegistryParams := PackageRegistryParams{
 		registry: *registry,
 		user:     *user,
 		pkg:      *pkg,
 	}
 	prFilterParams := PullRequestFilterParams{
-		owner:      *user,
-		repository: *repository,
+		owner:      ownerAndRepo[0],
+		repository: ownerAndRepo[1],
 		tagRegex:   regexp.MustCompile(*prTagPattern),
 	}
 	err = clean(ghClient, prFilterParams, regClient, pkgRegistryParams, *dryRun)

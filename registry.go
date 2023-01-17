@@ -11,6 +11,8 @@ import (
 
 type ContainerRegistryClient interface {
 	GetRegistryObjectFromHash(repository, hash string) (v1.Image, v1.ImageIndex, error)
+
+	DeleteRegistryObject(repository, hash string) error
 }
 
 type containerRegistryClientImpl struct {
@@ -67,4 +69,22 @@ func (c *containerRegistryClientImpl) GetRegistryObjectFromHash(repository, hash
 		// Unmanaged manifest type.
 		return nil, nil, fmt.Errorf("unmanaged media type for descriptor '%v': %s", descriptor, descriptor.Descriptor.MediaType)
 	}
+}
+
+// DeleteRegistryObject deletes a repository object from its hash.
+func (c *containerRegistryClientImpl) DeleteRegistryObject(repository, hash string) error {
+	// Build the digest from the repository and hash.
+	objectFullName := fmt.Sprintf("%s@%s", repository, hash)
+	digest, err := name.NewDigest(objectFullName, name.StrictValidation)
+	if err != nil {
+		return fmt.Errorf("unable to build digest from hash '%s': %w", hash, err)
+	}
+
+	// Delete the object.
+	err = remote.Delete(digest, remote.WithAuth(c.auth))
+	if err != nil {
+		return fmt.Errorf("unable to delete object from digest '%s': %w", digest, err)
+	}
+
+	return nil
 }

@@ -1,0 +1,55 @@
+name: GitHub Container registry cleaning
+description: Clean a GitHub Container registry by removing all unnecessary objects
+inputs:
+  # Container registry inputs.
+  registry:
+    description: The URL of the container registry
+    default: ghcr.io
+    required: false
+  user:
+    description: The container registry user
+    default: ${{ github.repository_owner }}
+    required: false
+  password:
+    description: The container registry user password or access token
+    required: true
+  package:
+    description: The name of the package to clean
+    required: true
+
+  # Repository inputs.
+  repository:
+    description: The GitHub repository (format owner/repository) in which to check the pull requests statuses
+    default: ${{ github.repository }}
+    required: false
+  pr-tag-regex:
+    description: |
+      The regular expression used to match the pull request tags, must include one capture group for the PR id
+    default: "^pr-(\\d+).*"
+    required: false
+
+  # Misc inputs.
+  dry-run:
+    description: If true, compute everything but do no perform the deletion
+    default: "false"
+    required: false
+  debug:
+    description: Enable the debug logs
+    default: "false"
+    required: false
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    # Container registry inputs.
+    - "-registry=${{ inputs.registry }}"
+    - "-user=${{ inputs.user }}"
+    - "-password=${{ inputs.password }}"
+    - "-package=${{ inputs.package }}"
+    # Repository inputs.
+    - "-repository=${{ inputs.repository }}"
+    - "-pr-tag-regex=${{ inputs.pr-tag-regex }}"
+    # Misc inputs.
+    - "-dry-run=${{ inputs.dry-run }}"
+    - "-debug=${{ inputs.debug }}"

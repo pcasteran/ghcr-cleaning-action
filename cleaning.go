@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-github/v49/github"
@@ -60,7 +61,7 @@ func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regCli
 		}
 	}
 
-	// Determine the package versions to delete.
+	// Determine the hashes to delete.
 	toDelete, err := computeHashesToDelete(ghClient, prFilterParams, packageVersionByHash, imageByHash, indexByHash)
 	if err != nil {
 		return fmt.Errorf("unable to compute the hashes to delete: %w", err)
@@ -82,6 +83,11 @@ func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regCli
 		}
 
 		log.Info().Int("nb-deleted", nbDeleted).Msg("registry cleaning done")
+
+		// Check if all objects have been deleted.
+		if nbDeleted != len(toDelete) {
+			return errors.New("one or more hash(es) could not be deleted")
+		}
 	} else {
 		// Dry run mode, don't perform the deletion.
 		log.Info().Msg("dry run mode is ON, no deletion has been performed")
