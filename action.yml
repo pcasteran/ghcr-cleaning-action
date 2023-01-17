@@ -1,29 +1,52 @@
 name: GitHub Container registry cleaning
 description: Clean a GitHub Container registry by removing all unnecessary objects
 inputs:
-  repository:
-    description: Repository name with owner. For example, `pcasteran/ghcr-cleaning-action`
+  # Container registry inputs.
+  registry:
+    description: The URL of the container registry
+    default: ghcr.io
+  user:
+    description: The container registry user
+    default: ${{ github.repository_owner }}
+  password:
+    description: The container registry user password or access token
+  package:
+    description: The name of the package to clean
     default: ${{ github.repository }}
-#  ref:
-#    description: >
-#      The branch, tag or SHA to checkout. When checking out the repository that
-#      triggered a workflow, this defaults to the reference or SHA for that
-#      event.  Otherwise, uses the default branch.
-#  token:
-#    description: >
-#      Personal access token (PAT) used to fetch the repository. The PAT is configured
-#      with the local git config, which enables your scripts to run authenticated git
-#      commands. The post-job step removes the PAT.
-#      We recommend using a service account with the least permissions necessary.
-#      Also when generating a new PAT, select the least scopes necessary.
-#      [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
-#    default: ${{ github.token }}
-#  lfs:
-#    description: Whether to download Git-LFS files
-#    default: false
+
+  # Repository inputs.
+  repository:
+    description: Repository name with owner, for example, `pcasteran/ghcr-cleaning-action`
+    default: ${{ github.repository }}
+  pr-tag-regex:
+    description: The regular expression used to match the pull request tags
+    default: "^pr-(\\d+).*"
+
+  # Misc inputs.
+  dry-run:
+    description: If true, compute everything but do no perform the deletion
+    default: false
+  debug:
+    description: Enable the debug logs
+    default: false
+
 runs:
   using: docker
   image: Dockerfile
   args:
-    - -h
-#    - ${{ inputs.repository }}
+    - -registry
+    - ${{ inputs.registry }}
+    - -user
+    - ${{ inputs.user }}
+    - -password
+    - ${{ inputs.password }}
+    - -package
+    - ${{ inputs.package }}
+    - -repository
+    - ${{ inputs.repository }}
+    - -pr-tag-regex
+    - ${{ inputs.pr-tag-regex }}
+    - -dry-run
+    - ${{ inputs.dry-run }}
+    - -debug
+    - ${{ inputs.debug }}
