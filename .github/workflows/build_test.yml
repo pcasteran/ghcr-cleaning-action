@@ -55,4 +55,4 @@ jobs:
             --ci \
             --lowestEfficiency=0.95 \
             --highestUserWastedPercent=0.05 \
-            ${{ steps.build_image.outputs.imageid }}
+            ${{ github.repository }}
