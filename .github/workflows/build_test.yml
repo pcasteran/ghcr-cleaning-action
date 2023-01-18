@@ -40,7 +40,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build the Docker image
+      - id: build_image
+        name: Build the Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
+          tags: ${{ github.repository }}
+
+      - name: Analyze the image efficiency
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            wagoodman/dive:latest \
+            --ci \
+            --lowestEfficiency=0.95 \
+            --highestUserWastedPercent=0.05 \
+            ${{ steps.build_image.outputs.imageid }}
