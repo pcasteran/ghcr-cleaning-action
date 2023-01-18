@@ -48,9 +48,6 @@ jobs:
           tags: ${{ github.repository }}
           load: true
 
-      - name: test
-        run: echo ${{ steps.build_image.outputs.imageid }}
-
       - name: Analyze the image efficiency
         run: |
           docker run --rm \
