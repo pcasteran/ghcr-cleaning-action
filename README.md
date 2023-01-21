@@ -9,7 +9,7 @@ image [indices](https://docs.docker.com/registry/spec/manifest-v2-2/). Unnecessa
 - tagged image indices related to a closed Pull Request and their referenced images
 
 There are actually many possible combinations, for a list of all the managed cases see
-the [unit tests](cleaning_test.go).
+the [unit tests](pkg/cleaning_test.go).
 
 ## Basic usage
 
