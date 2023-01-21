@@ -53,7 +53,7 @@ func Execute() {
 }
 
 func doExecute(cmd *cobra.Command, args []string) {
-	// Remove unused parameters warning.
+	// Remove the unused parameter warnings.
 	_ = cmd
 	_ = args
 
