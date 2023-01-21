@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"errors"
@@ -42,7 +42,7 @@ const (
 )
 
 var defaultPrFilterParams = PullRequestFilterParams{
-	tagRegex: regexp.MustCompile(defaultPrTagPattern),
+	TagRegex: regexp.MustCompile(DefaultPrTagPattern),
 }
 
 //
@@ -119,7 +119,7 @@ func (s *CleaningTestSuite) TestImageActivePullRequestTag() {
 
 	ghClient := new(githubClientMock)
 	ghClient.
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 1234).
 		Return("active", nil)
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
@@ -140,7 +140,7 @@ func (s *CleaningTestSuite) TestImageClosedPullRequestTag() {
 
 	ghClient := new(githubClientMock)
 	ghClient.
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 1234).
 		Return("closed", nil)
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
@@ -161,7 +161,7 @@ func (s *CleaningTestSuite) TestImageUnknownPullRequestTag() {
 
 	ghClient := new(githubClientMock)
 	ghClient.
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 1234).
 		Return("", errors.New("not found"))
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
@@ -182,9 +182,9 @@ func (s *CleaningTestSuite) TestImageMixedActiveAndClosedPullRequestsTag() {
 
 	ghClient := new(githubClientMock)
 	ghClient.
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 1234).
 		Return("closed", nil).
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 5678).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 5678).
 		Return("active", nil)
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
@@ -205,7 +205,7 @@ func (s *CleaningTestSuite) TestImageMixedValidTagAndClosedPullRequestsTag() {
 
 	ghClient := new(githubClientMock)
 	ghClient.
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 1234).
 		Return("closed", nil)
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
@@ -337,7 +337,7 @@ func (s *CleaningTestSuite) TestIndexCascading4() {
 
 	ghClient := new(githubClientMock)
 	ghClient.
-		On("GetPullRequestState", defaultPrFilterParams.owner, defaultPrFilterParams.repository, 1234).
+		On("GetPullRequestState", defaultPrFilterParams.Owner, defaultPrFilterParams.Repository, 1234).
 		Return("closed", nil)
 
 	toDelete, err := computeHashesToDelete(ghClient, defaultPrFilterParams, versions, images, indices)
