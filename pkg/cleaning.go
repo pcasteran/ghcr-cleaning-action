@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"errors"
@@ -10,22 +10,24 @@ import (
 	"strconv"
 )
 
+const DefaultPrTagPattern = "^pr-(\\d+).*"
+
 type PullRequestFilterParams struct {
-	owner      string
-	repository string
-	tagRegex   *regexp.Regexp
+	Owner      string
+	Repository string
+	TagRegex   *regexp.Regexp
 }
 
 type PackageRegistryParams struct {
-	registry string
-	user     string
-	pkg      string
+	Registry    string
+	User        string
+	PackageName string
 }
 
-func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regClient ContainerRegistryClient, pkgRegistryParams PackageRegistryParams, dryRun bool) error {
+func Clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regClient ContainerRegistryClient, pkgRegistryParams PackageRegistryParams, dryRun bool) error {
 	// List all the versions of the package.
-	log.Debug().Str("user", pkgRegistryParams.user).Str("package", pkgRegistryParams.pkg).Msg("listing all the package versions")
-	pkgVersions, err := ghClient.GetAllContainerPackageVersions(pkgRegistryParams.user, pkgRegistryParams.pkg)
+	log.Debug().Str("user", pkgRegistryParams.User).Str("package", pkgRegistryParams.PackageName).Msg("listing all the package versions")
+	pkgVersions, err := ghClient.GetAllContainerPackageVersions(pkgRegistryParams.User, pkgRegistryParams.PackageName)
 	if err != nil {
 		return fmt.Errorf("unable to list the package versions: %w", err)
 	}
@@ -36,7 +38,7 @@ func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regCli
 	}
 
 	// Get the registry object (image or image index) for each hash.
-	repository := fmt.Sprintf("%s/%s/%s", pkgRegistryParams.registry, pkgRegistryParams.user, pkgRegistryParams.pkg)
+	repository := fmt.Sprintf("%s/%s/%s", pkgRegistryParams.Registry, pkgRegistryParams.User, pkgRegistryParams.PackageName)
 	log.Debug().Str("repository", repository).Msg("fetching the container registry objects")
 	imageByHash := make(map[string]v1.Image)
 	indexByHash := make(map[string]v1.ImageIndex)
@@ -74,7 +76,7 @@ func clean(ghClient GithubClient, prFilterParams PullRequestFilterParams, regCli
 		for _, hash := range toDelete {
 			version := packageVersionByHash[hash]
 			log.Trace().Str("hash", hash).Int64("version-id", *version.ID).Msg("deleting package version")
-			err := ghClient.DeleteContainerPackageVersion(pkgRegistryParams.user, pkgRegistryParams.pkg, *version.ID)
+			err := ghClient.DeleteContainerPackageVersion(pkgRegistryParams.User, pkgRegistryParams.PackageName, *version.ID)
 			if err != nil {
 				log.Warn().Err(err).Msg("unable to delete package version")
 				continue
@@ -211,7 +213,7 @@ func checkTagsRelatedToClosedPullRequest(ghClient GithubClient, prFilterParams P
 	// Check if all tags are related to a closed pull request.
 	allTagsRelatedToClosedPR := true
 	for _, tag := range tags {
-		matches := prFilterParams.tagRegex.FindStringSubmatch(tag)
+		matches := prFilterParams.TagRegex.FindStringSubmatch(tag)
 		if matches != nil {
 			// Get the pull request id.
 			idStr := matches[1]
@@ -221,7 +223,7 @@ func checkTagsRelatedToClosedPullRequest(ghClient GithubClient, prFilterParams P
 			}
 
 			// Get the pull request status.
-			status, err := ghClient.GetPullRequestState(prFilterParams.owner, prFilterParams.repository, id)
+			status, err := ghClient.GetPullRequestState(prFilterParams.Owner, prFilterParams.Repository, id)
 			if err != nil {
 				return false, fmt.Errorf("unable to retrieve pull request status: %w", err)
 			}
