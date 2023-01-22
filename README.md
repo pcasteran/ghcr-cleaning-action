@@ -14,7 +14,7 @@ the [unit tests](pkg/cleaning_test.go).
 ## Basic usage
 
 ```yaml
-uses: actions/ghcr-cleaning-action@v1
+uses: pcasteran/ghcr-cleaning-action@v1
 with:
   user: ${{ github.repository_owner }}
   password: ${{ secrets.YOUR_SECRET_PAT }}
