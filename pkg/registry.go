@@ -49,7 +49,7 @@ func (c *containerRegistryClientImpl) GetRegistryObjectFromHash(repository, hash
 
 	// Analyse the manifest.
 	switch descriptor.Descriptor.MediaType {
-	case types.DockerManifestSchema2:
+	case types.DockerManifestSchema2, types.OCIManifestSchema1:
 		// Image manifest.
 		image, err := descriptor.Image()
 		if err != nil {
@@ -57,7 +57,7 @@ func (c *containerRegistryClientImpl) GetRegistryObjectFromHash(repository, hash
 		}
 		return image, nil, nil
 
-	case types.DockerManifestList:
+	case types.DockerManifestList, types.OCIImageIndex:
 		// Image index manifest.
 		index, err := descriptor.ImageIndex()
 		if err != nil {
