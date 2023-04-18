@@ -6,7 +6,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/google/go-github/v49 v49.1.0
 	github.com/rs/zerolog v1.29.1
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/oauth2 v0.6.0
 )
