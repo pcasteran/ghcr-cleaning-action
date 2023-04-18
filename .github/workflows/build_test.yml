@@ -39,9 +39,9 @@ jobs:
       - name: Test the action
         uses: ./
         with:
-          password: ${{ secrets.MY_SECRET_PAT }}
           package: terraform-graph-beautifier
           repository: pcasteran/terraform-graph-beautifier
+          password: ${{ secrets.MY_SECRET_PAT }}
           debug: true
           dry-run: true
 
