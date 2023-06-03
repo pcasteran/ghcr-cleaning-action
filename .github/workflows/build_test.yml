@@ -39,7 +39,7 @@ jobs:
       - name: Test the action
         # Can't use "./" due to password passing issues.
         # Can't use "${{ github.repository }}", see https://github.com/orgs/community/discussions/25246.
-        uses: pcasteran/ghcr-cleaning-action@${{ github.sha }}
+        uses: "pcasteran/ghcr-cleaning-action@${{ github.ref_name }}"
         with:
           package: terraform-graph-beautifier
           repository: pcasteran/terraform-graph-beautifier
