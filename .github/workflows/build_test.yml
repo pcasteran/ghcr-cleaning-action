@@ -30,20 +30,23 @@ jobs:
       - name: Launch the unit tests
         run: go test
 
-  integration_test:
-    name: Integration test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Test the action
-        uses: ./
-        with:
-          package: terraform-graph-beautifier
-          repository: pcasteran/terraform-graph-beautifier
-          password: ${{ secrets.MY_SECRET_PAT }}
-          debug: true
-          dry-run: true
+  # Integration test disabled due to a GitHub action bug randomly
+  # not able to fetch the secret value and returning null.
+  # See https://github.com/orgs/community/discussions/25701#discussioncomment-3248811
+#  integration_test:
+#    name: Integration test
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#
+#      - name: Test the action
+#        uses: ./
+#        with:
+#          package: terraform-graph-beautifier
+#          repository: pcasteran/terraform-graph-beautifier
+#          password: ${{ secrets.MY_SECRET_PAT }}
+#          debug: true
+#          dry-run: true
 
   #####
 
