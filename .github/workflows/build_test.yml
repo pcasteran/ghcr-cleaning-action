@@ -37,7 +37,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Test the action
-        uses: ${{ github.repository }}@${{ github.ref }}
+        # Can't use "./" due to password passing issues.
+        # Can't use "${{ github.repository }}", see https://github.com/orgs/community/discussions/25246.
+        uses: pcasteran/ghcr-cleaning-action@${{ github.sha }}
         with:
           package: terraform-graph-beautifier
           repository: pcasteran/terraform-graph-beautifier
