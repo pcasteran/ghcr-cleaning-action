@@ -47,13 +47,21 @@ runs:
   image: Dockerfile
   args:
     # Container registry inputs.
-    - --registry=${{ inputs.registry }}
-    - --user=${{ inputs.user }}
-    - --password=${{ inputs.password }}
-    - --package=${{ inputs.package }}
+    - --registry
+    - ${{ inputs.registry }}
+    - --user
+    - ${{ inputs.user }}
+    - --password
+    - ${{ inputs.password }}
+    - --package
+    - ${{ inputs.package }}
     # Repository inputs.
-    - --repository=${{ inputs.repository }}
-    - --pr-tag-regex=${{ inputs.pr-tag-regex }}
+    - --repository
+    - ${{ inputs.repository }}
+    - --pr-tag-regex
+    - ${{ inputs.pr-tag-regex }}
     # Misc inputs.
-    - --dry-run=${{ inputs.dry-run }}
-    - --debug=${{ inputs.debug }}
+    - --dry-run
+    - ${{ inputs.dry-run }}
+    - --debug
+    - ${{ inputs.debug }}
