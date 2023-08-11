@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/google/go-containerregistry v0.15.2
 	github.com/google/go-github/v49 v49.1.0
-	github.com/rs/zerolog v1.29.1
+	github.com/rs/zerolog v1.30.0
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/oauth2 v0.11.0
